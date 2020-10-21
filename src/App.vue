@@ -5,6 +5,7 @@
       color="primary"
       dark
     >
+      <v-spacer></v-spacer>
       <div class="d-flex align-center">
         <v-img
           alt="Vuetify Logo"
@@ -15,23 +16,31 @@
           width="40"
         />
 
-        <v-toolbar-title>Event planner</v-toolbar-title>
+        <v-toolbar-title class="text-h3">Event planner</v-toolbar-title>
 
       </div>
-
-      <v-spacer></v-spacer>
 
     </v-app-bar>
 
     <v-main>
       <router-view/>
     </v-main>
+
+    <v-alert v-if="alert[1]" :type="alert[2]" class="mx-auto" min-width="400" elevation="10" prominent>
+      {{alert[0]}}
+    </v-alert>
   </v-app>
 </template>
 
 <script>
+import store from './store/index'
 
 export default {
-  name: 'App'
+  name: 'App',
+  computed: {
+    alert () {
+      return store.getters.getAlert
+    }
+  }
 }
 </script>

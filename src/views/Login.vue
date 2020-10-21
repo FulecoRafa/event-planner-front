@@ -35,6 +35,7 @@
         <v-btn
           :disabled="!validForm"
           color="primary"
+          @click="login"
         >Login</v-btn>
         <v-spacer></v-spacer>
         <v-btn
@@ -48,6 +49,8 @@
 </template>
 
 <script>
+import store from '../store/index'
+
 export default {
   name: 'Login',
   data: () => ({
@@ -66,6 +69,16 @@ export default {
   methods: {
     goToRegister () {
       this.$router.push({ path: '/register' })
+    },
+    login () {
+      const data = { username: this.userData.username, passwd: this.userData.passwd }
+      store.dispatch('login', data)
+        .then(() => {
+          this.$router.push('/app')
+        })
+        .catch(err => {
+          store.dispatch('alert', err)
+        })
     }
   }
 }

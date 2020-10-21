@@ -61,6 +61,7 @@
         <v-btn
           :disabled="!validForm"
           color="primary"
+          @click="register"
         >Register</v-btn>
         <v-spacer></v-spacer>
         <v-btn
@@ -113,6 +114,16 @@ export default {
       if (this.userData.passwd.match(/\d/g)) points++
       if (this.userData.passwd.match(/\W/g)) points++
       return points
+    },
+    register () {
+      this.$store.dispatch('register', this.userData)
+        .then(() => {
+          this.$store.dispatch('confirm', 'Registering was successfull')
+          this.$router.push('/')
+        })
+        .catch(err => {
+          this.$store.dispatch('alert', err)
+        })
     }
   }
 }
