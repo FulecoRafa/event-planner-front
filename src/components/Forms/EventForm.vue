@@ -335,8 +335,8 @@ export default {
       if (this.visible) {
         this.setup = true
         if (this.mode === 'create') {
-          this.eventData.start = this.date
-          this.startDate = this.date
+          this.eventData.start = this.date || ''
+          this.startDate = this.date || ''
         }
         if (this.mode === 'edit') {
           this.eventData = this.editEvent

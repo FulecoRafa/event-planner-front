@@ -43,6 +43,30 @@ export default new Vuex.Store({
         color: 'green',
         id: 3
       }
+    ],
+
+    invites: [
+      {
+        name: 'Inv1',
+        startStamp: new Date('2020-10-22T08:00Z'),
+        endStamp: new Date('2020-10-28T08:00Z'),
+        color: 'blue',
+        id: 1
+      },
+      {
+        name: 'Inv2',
+        startStamp: new Date('2020-10-28T08:00Z'),
+        endStamp: new Date('2020-10-28T10:00Z'),
+        color: 'orange',
+        id: 2
+      },
+      {
+        name: 'Inv3',
+        startStamp: new Date('2020-10-29T08:00Z'),
+        endStamp: new Date('2020-11-01T08:00Z'),
+        color: 'green',
+        id: 3
+      }
     ]
   },
   getters: {
@@ -55,12 +79,24 @@ export default new Vuex.Store({
     getAlert: (state) => {
       return [state.alertMessage, state.showAlert, state.alertType]
     },
+
     getEvents: (state) => {
       return state.events.map(event => {
         event.start = parseDate(event.startStamp)
         event.end = parseDate(event.endStamp)
         return event
       })
+    },
+
+    getInvites: (state) => {
+      return state.invites.map(invite => {
+        invite.start = parseDate(invite.startStamp)
+        invite.end = parseDate(invite.endStamp)
+        return invite
+      })
+    },
+    getInviteNum: (state) => {
+      return state.invites.length
     }
   },
   mutations: {
@@ -92,6 +128,10 @@ export default new Vuex.Store({
 
     setEvents (state, events) {
       state.events = events
+    },
+
+    setInvites (state, newInvites) {
+      state.invites = newInvites
     }
   },
   actions: {
@@ -159,11 +199,20 @@ export default new Vuex.Store({
       commit('setEvents', newEvents)
     },
     editEvent ({ state, commit }, { eventData, id }) {
-      console.log(id)
       const oldEvents = state.events
       const newEvents = oldEvents.filter(event => event.id !== id)
-      console.log([...newEvents, eventData])
       commit('setEvents', [...newEvents, eventData])
+    },
+
+    acceptInvite ({ state, commit }, thisInvite) {
+      const oldInvites = state.invites
+      const newInvites = oldInvites.filter(invite => invite.id !== thisInvite.id)
+      commit('setInvites', newInvites)
+    },
+    declineInvite ({ state, commit }, thisInvite) {
+      const oldInvites = state.invites
+      const newInvites = oldInvites.filter(invite => invite.id !== thisInvite.id)
+      commit('setInvites', newInvites)
     }
   }
 })

@@ -9,7 +9,7 @@
           >
             <v-icon>mdi-chevron-left</v-icon>
           </v-btn>
-          <v-toolbar-title v-if="$refs.calendar">{{$refs.calendar.title}}</v-toolbar-title>
+          <v-toolbar-title v-if="ready">{{$refs.calendar.title}}</v-toolbar-title>
           <v-btn
             icon
             class="ma-2"
@@ -17,6 +17,14 @@
           >
             <v-icon>mdi-chevron-right</v-icon>
             </v-btn>
+            <v-btn
+            outlined
+            class="mr-4"
+            color="grey darken-2"
+            @click="day = ''"
+          >
+            Today
+          </v-btn>
         </v-toolbar></v-sheet>
         <v-sheet height="600">
           <v-calendar
@@ -50,7 +58,8 @@ export default {
     eventDialogTitle: '',
     dialogDate: '',
     mode: '',
-    editEvent: {}
+    editEvent: {},
+    ready: false
   }),
   methods: {
     getEventColor (event) {
@@ -79,6 +88,9 @@ export default {
     events () {
       return this.$store.getters.getEvents
     }
+  },
+  mounted () {
+    this.ready = true
   }
 }
 </script>

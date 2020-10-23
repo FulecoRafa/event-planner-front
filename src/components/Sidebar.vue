@@ -32,16 +32,52 @@
         <v-icon>mdi-account-circle</v-icon>
         <v-list-item-title class="ml-5">Acount</v-list-item-title>
       </v-list-item>
-      <v-list-item link>
-        <v-badge
-          :content="inv_num"
-          :value="inv_num"
-          color="primary"
-          overlap
-          bordered
+      <v-list-group
+        v-model="invitesOpen"
+        no-action
+        v-if="inviteNum"
+      >
+        <template v-slot:prependIcon>
+            <v-badge
+              :content="inviteNum"
+              :value="inviteNum"
+              color="primary"
+              overlap
+              bordered
+            >
+              <v-icon>mdi-email</v-icon>
+            </v-badge>
+        </template>
+        <template v-slot:activator>
+          <v-list-item-content>
+            <v-list-item-title>Invitations</v-list-item-title>
+          </v-list-item-content>
+        </template>
+
+        <v-list-item
+          v-for="invite in invites"
+          :key="invite.id"
         >
-          <v-icon>mdi-email</v-icon>
-        </v-badge>
+          <v-list-item-content>
+            <v-list-item-title>{{invite.name}}</v-list-item-title>
+            <v-list-item-subtitle>
+              {{invite.start}}
+            </v-list-item-subtitle>
+            <v-list-item-subtitle>
+              {{invite.end}}
+            </v-list-item-subtitle>
+            <v-list-item-action>
+              <v-row>
+                <v-btn color="success" small @click="acceptInv(invite)">Accept</v-btn>
+                <v-spacer />
+                <v-btn color="error" small @click="declineInv(invite)">Decline</v-btn>
+              </v-row>
+            </v-list-item-action>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list-group>
+      <v-list-item v-else link @click="noInv">
+        <v-icon>mdi-email</v-icon>
         <v-list-item-title class="ml-5">Invitations</v-list-item-title>
       </v-list-item>
       <v-list-item link  @click="logout">
@@ -62,8 +98,8 @@ export default {
   },
   data: () => ({
     drawer: true,
-    inv_num: 5,
-    userFormShow: false
+    userFormShow: false,
+    invitesOpen: false
   }),
   computed: {
     user () {
@@ -71,6 +107,12 @@ export default {
     },
     key () {
       return this.$store.getters.getKey
+    },
+    invites () {
+      return this.$store.getters.getInvites
+    },
+    inviteNum () {
+      return this.$store.getters.getInviteNum
     }
   },
   methods: {
@@ -78,6 +120,15 @@ export default {
       this.$store.dispatch('logout')
       this.$store.dispatch('confirm', 'Successfully logged out')
       this.$router.push('/')
+    },
+    acceptInv (invite) {
+      this.$store.dispatch('acceptInvite', invite)
+    },
+    declineInv (invite) {
+      this.$store.dispatch('declineInvite', invite)
+    },
+    noInv () {
+      this.$store.dispatch('alert', 'You have no invites')
     }
   }
 }
