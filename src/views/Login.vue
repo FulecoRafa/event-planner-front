@@ -2,6 +2,7 @@
 
   <v-card
   :loading="loading"
+  :disabled="loading"
   class="mx-auto my-12"
   max-width="372"
   >
@@ -71,6 +72,7 @@ export default {
       this.$router.push({ path: '/register' })
     },
     login () {
+      this.loading = true
       const data = { username: this.userData.username, passwd: this.userData.passwd }
       store.dispatch('login', data)
         .then(() => {
@@ -78,6 +80,9 @@ export default {
         })
         .catch(err => {
           store.dispatch('alert', err)
+        })
+        .finally(() => {
+          this.loading = false
         })
     }
   }

@@ -28,7 +28,7 @@
         </v-list-item-content>
       </v-list-item>
       <v-divider/>
-      <v-list-item link>
+      <v-list-item link @click="userFormShow = !userFormShow">
         <v-icon>mdi-account-circle</v-icon>
         <v-list-item-title class="ml-5">Acount</v-list-item-title>
       </v-list-item>
@@ -38,6 +38,7 @@
           :value="inv_num"
           color="primary"
           overlap
+          bordered
         >
           <v-icon>mdi-email</v-icon>
         </v-badge>
@@ -48,14 +49,21 @@
         <v-list-item-title class="ml-5">Log out</v-list-item-title>
       </v-list-item>
     </v-list>
+    <UserForm :visible="userFormShow" @exit="userFormShow = false"/>
   </v-navigation-drawer>
 </template>
 
 <script>
+import UserForm from '../components/Forms/UserForm'
+
 export default {
+  components: {
+    UserForm
+  },
   data: () => ({
     drawer: true,
-    inv_num: 3
+    inv_num: 5,
+    userFormShow: false
   }),
   computed: {
     user () {

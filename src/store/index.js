@@ -4,13 +4,46 @@ import axios from 'axios'
 
 Vue.use(Vuex)
 
+const months = ['0', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function parseDate (date) {
+  let sDate = date.toString()
+  sDate = sDate.split(' ')
+  return `${sDate[3]}-${months.indexOf(sDate[1])}-${sDate[2]} ${sDate[4].slice(0, 5)}`
+}
+
 export default new Vuex.Store({
   state: {
     user: null,
     authKey: null,
+
     showAlert: false,
     alertMessage: '',
-    alertType: ''
+    alertType: '',
+
+    events: [
+      {
+        name: 'First',
+        startStamp: new Date('2020-10-22T08:00Z'),
+        endStamp: new Date('2020-10-28T08:00Z'),
+        color: 'blue',
+        id: 1
+      },
+      {
+        name: 'Second',
+        startStamp: new Date('2020-10-28T08:00Z'),
+        endStamp: new Date('2020-10-28T10:00Z'),
+        color: 'orange',
+        id: 2
+      },
+      {
+        name: 'Third',
+        startStamp: new Date('2020-10-29T08:00Z'),
+        endStamp: new Date('2020-11-01T08:00Z'),
+        color: 'green',
+        id: 3
+      }
+    ]
   },
   getters: {
     getKey: (state) => {
@@ -21,6 +54,13 @@ export default new Vuex.Store({
     },
     getAlert: (state) => {
       return [state.alertMessage, state.showAlert, state.alertType]
+    },
+    getEvents: (state) => {
+      return state.events.map(event => {
+        event.start = parseDate(event.startStamp)
+        event.end = parseDate(event.endStamp)
+        return event
+      })
     }
   },
   mutations: {
@@ -48,6 +88,10 @@ export default new Vuex.Store({
     },
     clear_user (state) {
       state.user = null
+    },
+
+    setEvents (state, events) {
+      state.events = events
     }
   },
   actions: {
@@ -102,6 +146,24 @@ export default new Vuex.Store({
     },
     confirm ({ commit }, message) {
       commit('set_confirm', message)
+    },
+
+    addEvent ({ state, commit }, event) {
+      const oldEvents = state.events
+      const newEvents = [...oldEvents, event]
+      commit('setEvents', newEvents)
+    },
+    removeEvent ({ state, commit }, id) {
+      const oldEvents = state.events
+      const newEvents = oldEvents.filter(event => event.id !== id)
+      commit('setEvents', newEvents)
+    },
+    editEvent ({ state, commit }, { eventData, id }) {
+      console.log(id)
+      const oldEvents = state.events
+      const newEvents = oldEvents.filter(event => event.id !== id)
+      console.log([...newEvents, eventData])
+      commit('setEvents', [...newEvents, eventData])
     }
   }
 })

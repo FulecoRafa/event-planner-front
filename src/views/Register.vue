@@ -2,6 +2,7 @@
 
   <v-card
   :loading="loading"
+  :disabled="loading"
   class="mx-auto my-12"
   max-width="372"
   >
@@ -91,21 +92,16 @@ export default {
   }),
   computed: {
     validForm () {
-      return this.$data.userData.username !== '' && this.$data.userData.passwd !== '' && this.$data.userData.r_passwd === this.$data.userData.passwd && this.passwd_strength() > 1
+      return this.$data.userData.username !== '' && this.$data.userData.passwd !== '' && this.$data.userData.r_passwd === this.$data.userData.passwd && this.passwd_strength > 1
     },
     passwd_match () {
       return this.$data.userData.r_passwd === this.$data.userData.passwd
     },
     progress () {
-      return this.passwd_strength() / 4 * 100
+      return this.passwd_strength / 4 * 100
     },
     color () {
-      return ['error', 'error', 'yellow', 'green'][this.passwd_strength()]
-    }
-  },
-  methods: {
-    goToLogin () {
-      this.$router.push({ path: '/' })
+      return ['error', 'error', 'yellow', 'green'][this.passwd_strength]
     },
     passwd_strength () {
       let points = 0
@@ -114,8 +110,14 @@ export default {
       if (this.userData.passwd.match(/\d/g)) points++
       if (this.userData.passwd.match(/\W/g)) points++
       return points
+    }
+  },
+  methods: {
+    goToLogin () {
+      this.$router.push({ path: '/' })
     },
     register () {
+      this.loading = true
       this.$store.dispatch('register', this.userData)
         .then(() => {
           this.$store.dispatch('confirm', 'Registering was successfull')
@@ -123,6 +125,9 @@ export default {
         })
         .catch(err => {
           this.$store.dispatch('alert', err)
+        })
+        .finally(() => {
+          this.loading = false
         })
     }
   }
