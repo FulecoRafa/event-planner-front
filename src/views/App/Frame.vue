@@ -23,15 +23,13 @@
 <script>
 import store from '../../store/index'
 
-import Sidebar from '../../components/Sidebar'
-import Calendar from '../../components/Calendar'
 import List from '../../components/List'
 
 export default {
   name: 'Frame',
   components: {
-    Sidebar,
-    Calendar,
+    Sidebar: () => import('../../components/Sidebar'),
+    Calendar: () => import('../../components/Calendar'),
     List
   },
   data: () => ({

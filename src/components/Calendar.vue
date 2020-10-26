@@ -25,14 +25,24 @@
           >
             Today
           </v-btn>
+          <v-btn
+            color="grey darken-2"
+            :loading="refreshing"
+            @click="update"
+            icon
+          >
+            <v-icon>mdi-refresh</v-icon>
+          </v-btn>
         </v-toolbar></v-sheet>
-        <v-sheet height="600">
+        <v-sheet height="auto">
           <v-calendar
+            color="blue lighten-2"
             ref="calendar"
             type="month"
             v-model="day"
             :events="events"
             :event-color="getEventColor"
+            :event-overlap-threshold="30"
             @click:event="showEvent"
             @click:date="createEvent"
           >
@@ -59,7 +69,8 @@ export default {
     dialogDate: '',
     mode: '',
     editEvent: {},
-    ready: false
+    ready: false,
+    refreshing: false
   }),
   methods: {
     getEventColor (event) {
@@ -82,6 +93,14 @@ export default {
       this.eventDialogShow = false
       this.dialogDate = ''
       this.editEvent = {}
+    },
+    update () {
+      this.refreshing = true
+      this.$store.dispatch('refresh')
+        .then(() => {
+          console.log('refreshed')
+          this.refreshing = false
+        })
     }
   },
   computed: {

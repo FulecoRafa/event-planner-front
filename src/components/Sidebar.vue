@@ -5,6 +5,7 @@
     expand-on-hover
     bottom
     app
+    width="300"
   >
     <v-list>
       <v-list-item class="px-2">
@@ -59,7 +60,7 @@
           :key="invite.id"
         >
           <v-list-item-content>
-            <v-list-item-title>{{invite.name}}</v-list-item-title>
+            <v-list-item-title style="white-space: normal">{{invite.sender.username}} has invited you to {{invite.event.name}}</v-list-item-title>
             <v-list-item-subtitle>
               {{invite.start}}
             </v-list-item-subtitle>
@@ -69,8 +70,7 @@
             <v-list-item-action>
               <v-row>
                 <v-btn color="success" small @click="acceptInv(invite)">Accept</v-btn>
-                <v-spacer />
-                <v-btn color="error" small @click="declineInv(invite)">Decline</v-btn>
+                <v-btn class="ml-3" color="error" small @click="declineInv(invite)">Decline</v-btn>
               </v-row>
             </v-list-item-action>
           </v-list-item-content>

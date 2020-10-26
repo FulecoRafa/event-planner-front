@@ -26,10 +26,12 @@
                 {{event.name}}
               </v-list-item-title>
               <v-list-item-action>
-                <v-list-item-action-text>
+                <h4 class="mr-8">
                   {{event.start}}
-                </v-list-item-action-text>
-                {{event.end}}
+                </h4>
+                <h4 class="mr-8">
+                  {{event.end}}
+                </h4>
               </v-list-item-action>
             </v-list-item-content>
           </v-list-item>

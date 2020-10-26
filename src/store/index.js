@@ -7,6 +7,7 @@ Vue.use(Vuex)
 const months = ['0', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 function parseDate (date) {
+  date = new Date(date)
   let sDate = date.toString()
   sDate = sDate.split(' ')
   return `${sDate[3]}-${months.indexOf(sDate[1])}-${sDate[2]} ${sDate[4].slice(0, 5)}`
@@ -21,53 +22,9 @@ export default new Vuex.Store({
     alertMessage: '',
     alertType: '',
 
-    events: [
-      {
-        name: 'First',
-        startStamp: new Date('2020-10-22T08:00Z'),
-        endStamp: new Date('2020-10-28T08:00Z'),
-        color: 'blue',
-        id: 1
-      },
-      {
-        name: 'Second',
-        startStamp: new Date('2020-10-28T08:00Z'),
-        endStamp: new Date('2020-10-28T10:00Z'),
-        color: 'orange',
-        id: 2
-      },
-      {
-        name: 'Third',
-        startStamp: new Date('2020-10-29T08:00Z'),
-        endStamp: new Date('2020-11-01T08:00Z'),
-        color: 'green',
-        id: 3
-      }
-    ],
+    events: [],
 
-    invites: [
-      {
-        name: 'Inv1',
-        startStamp: new Date('2020-10-22T08:00Z'),
-        endStamp: new Date('2020-10-28T08:00Z'),
-        color: 'blue',
-        id: 1
-      },
-      {
-        name: 'Inv2',
-        startStamp: new Date('2020-10-28T08:00Z'),
-        endStamp: new Date('2020-10-28T10:00Z'),
-        color: 'orange',
-        id: 2
-      },
-      {
-        name: 'Inv3',
-        startStamp: new Date('2020-10-29T08:00Z'),
-        endStamp: new Date('2020-11-01T08:00Z'),
-        color: 'green',
-        id: 3
-      }
-    ]
+    invites: []
   },
   getters: {
     getKey: (state) => {
@@ -90,8 +47,8 @@ export default new Vuex.Store({
 
     getInvites: (state) => {
       return state.invites.map(invite => {
-        invite.start = parseDate(invite.startStamp)
-        invite.end = parseDate(invite.endStamp)
+        invite.start = parseDate(invite.event.startStamp)
+        invite.end = parseDate(invite.event.endStamp)
         return invite
       })
     },
@@ -112,7 +69,7 @@ export default new Vuex.Store({
       state.showAlert = true
       setTimeout(() => {
         state.showAlert = false
-      }, 8000)
+      }, 5000)
     },
     set_confirm (state, message) {
       state.alertMessage = message
@@ -154,7 +111,9 @@ export default new Vuex.Store({
           .then(response => {
             commit('set_key', { key: response.data.auth })
             dispatch('authUser')
-              .then(() => {
+              .then(async () => {
+                await dispatch('fetchEvents')
+                await dispatch('fetchInvites')
                 resolve()
               })
               .catch(err => {
@@ -188,31 +147,134 @@ export default new Vuex.Store({
       commit('set_confirm', message)
     },
 
-    addEvent ({ state, commit }, event) {
-      const oldEvents = state.events
-      const newEvents = [...oldEvents, event]
-      commit('setEvents', newEvents)
+    fetchEvents ({ state, commit }) {
+      return new Promise((resolve, reject) => {
+        axios.get('http://localhost:9000/event', { headers: { auth: state.authKey } })
+          .then(response => {
+            commit('setEvents', response.data.data)
+            resolve()
+          })
+          .catch(err => {
+            console.log(err)
+            reject(err.response.data.text)
+          })
+      })
     },
-    removeEvent ({ state, commit }, id) {
-      const oldEvents = state.events
-      const newEvents = oldEvents.filter(event => event.id !== id)
-      commit('setEvents', newEvents)
+    addEvent ({ state, dispatch }, event) {
+      return new Promise((resolve, reject) => {
+        axios.post('http://localhost:9000/event', event, { headers: { auth: state.authKey } })
+          .then(response => {
+            dispatch('confirm', response.data.text)
+            dispatch('fetchEvents')
+            resolve()
+          })
+          .catch(err => {
+            dispatch('alert', err.response.data.text)
+            reject(err.response.data.text)
+          })
+      })
     },
-    editEvent ({ state, commit }, { eventData, id }) {
-      const oldEvents = state.events
-      const newEvents = oldEvents.filter(event => event.id !== id)
-      commit('setEvents', [...newEvents, eventData])
+    removeEvent ({ state, dispatch }, id) {
+      return new Promise((resolve, reject) => {
+        axios.delete(`http://localhost:9000/event/${id}`, { headers: { auth: state.authKey } })
+          .then(response => {
+            dispatch('confirm', response.data.text)
+            dispatch('fetchEvents')
+            resolve()
+          })
+          .catch(err => {
+            dispatch('alert', err.response.data.text)
+            reject(err.response.data.text)
+          })
+      })
+    },
+    editEvent ({ state, dispatch }, { eventData, id }) {
+      console.log(id)
+      return new Promise((resolve, reject) => {
+        axios.put(`http://localhost:9000/event/${id}`, eventData, { headers: { auth: state.authKey } })
+          .then(response => {
+            dispatch('confirm', response.data.text)
+            dispatch('fetchEvents')
+            resolve()
+          })
+          .catch(err => {
+            dispatch('alert', err.response.data.text)
+            reject(err.response.data.text)
+          })
+      })
     },
 
-    acceptInvite ({ state, commit }, thisInvite) {
-      const oldInvites = state.invites
-      const newInvites = oldInvites.filter(invite => invite.id !== thisInvite.id)
-      commit('setInvites', newInvites)
+    fetchInvites ({ state, commit, dispatch }) {
+      return new Promise((resolve, reject) => {
+        axios.get('http://localhost:9000/invite', { headers: { auth: state.authKey } })
+          .then(response => {
+            console.log(response.data.data)
+            commit('setInvites', response.data.data)
+            resolve()
+            setTimeout(() => {
+              dispatch('fetchInvites')
+            }, 60000)
+          })
+          .catch(err => {
+            console.log(err)
+            reject(err.response.data.text)
+          })
+      })
     },
-    declineInvite ({ state, commit }, thisInvite) {
-      const oldInvites = state.invites
-      const newInvites = oldInvites.filter(invite => invite.id !== thisInvite.id)
-      commit('setInvites', newInvites)
+    sendInvite ({ state, dispatch }, payload) {
+      return new Promise((resolve, reject) => {
+        axios.post('http://localhost:9000/invite', payload, { headers: { auth: state.authKey } })
+          .then(response => {
+            dispatch('confirm', response.data.text)
+            dispatch('fetchInvites')
+            resolve()
+          })
+          .catch(err => {
+            dispatch('alert', err.response.data.text)
+            reject(err.response.data.text)
+          })
+      })
+    },
+    acceptInvite ({ state, dispatch }, thisInvite) {
+      return new Promise((resolve, reject) => {
+        axios.post(`http://localhost:9000/invite/accept/${thisInvite.event._id}/${thisInvite._id}`, {}, { headers: { auth: state.authKey } })
+          .then(response => {
+            dispatch('confirm', response.data.text)
+            dispatch('fetchInvites')
+            dispatch('fetchEvents')
+            resolve()
+          })
+          .catch(err => {
+            dispatch('alert', err.response.data.text)
+            reject(err.response.data.text)
+          })
+      })
+    },
+    declineInvite ({ state, dispatch }, thisInvite) {
+      return new Promise((resolve, reject) => {
+        axios.post(`http://localhost:9000/invite/decline/${thisInvite._id}`, {}, { headers: { auth: state.authKey } })
+          .then(response => {
+            dispatch('confirm', response.data.text)
+            dispatch('fetchInvites')
+            resolve()
+          })
+          .catch(err => {
+            dispatch('alert', err.response.data.text)
+            reject(err.response.data.text)
+          })
+      })
+    },
+
+    refresh ({ dispatch }) {
+      return new Promise((resolve, reject) => {
+        dispatch('fetchEvents')
+          .then(() => {
+            dispatch('fetchInvites')
+              .then(() => {
+                resolve()
+              })
+          })
+      })
     }
   }
 })

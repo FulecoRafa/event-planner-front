@@ -8,7 +8,7 @@
         <v-card-title>
           <div>{{title}}</div>
           <v-spacer />
-          <Invite  v-if="mode === 'edit'"/>
+          <Invite  v-if="mode === 'edit'" :event="editEvent._id"/>
         </v-card-title>
 
         <v-card-text>
@@ -177,6 +177,8 @@
             <v-spacer />
             <strong class="text-h6">{{eventData.color}}</strong>
           </v-row>
+          <v-divider class="my-8" v-if="errorMsg"/>
+          <h3 style="color:red" v-if="errorMsg">{{errorMsg}}</h3>
 
         </v-card-text>
         <v-card-actions>
@@ -247,7 +249,8 @@ export default {
       'red'
     ],
     loading: false,
-    setup: false
+    setup: false,
+    errorMsg: ''
   }),
   computed: {
     startDateString () {
@@ -291,23 +294,46 @@ export default {
       }
     },
     remove () {
-      this.$store.dispatch('removeEvent', this.editEvent.id)
-      this.reset()
-      this.$emit('exit')
+      this.loading = true
+      this.errorMsg = ''
+      this.$store.dispatch('removeEvent', this.editEvent._id)
+        .then(() => {
+          this.reset()
+          this.$emit('exit')
+        })
+        .catch(err => {
+          this.errorMsg = err
+        })
+      this.loading = false
     },
     cancel () {
       this.reset()
       this.$emit('exit')
     },
     save () {
+      this.loading = true
+      this.errorMsg = ''
       if (this.mode === 'create') {
         this.$store.dispatch('addEvent', this.eventData)
+          .then(() => {
+            this.reset()
+            this.$emit('exit')
+          })
+          .catch(err => {
+            this.errorMsg = err
+          })
       }
       if (this.mode === 'edit') {
-        this.$store.dispatch('editEvent', { eventData: this.eventData, id: this.editEvent.id })
+        this.$store.dispatch('editEvent', { eventData: this.eventData, id: this.editEvent._id })
+          .then(() => {
+            this.reset()
+            this.$emit('exit')
+          })
+          .catch(err => {
+            this.errorMsg = err
+          })
       }
-      this.reset()
-      this.$emit('exit')
+      this.loading = false
     }
   },
   watch: {
